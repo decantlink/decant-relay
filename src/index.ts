@@ -1,0 +1,80 @@
+import { runRetention } from "./retention";
+import { storeReport } from "./store";
+import { validateReport } from "./validate";
+
+export interface Env {
+  DB: D1Database;
+  PAUSED?: string;
+  DAILY_CAP?: string;
+}
+
+const MAX_BODY_BYTES = 16_384;
+const DEFAULT_DAILY_CAP = 5000;
+
+const reply = (status: number, body: Record<string, string>, headers: Record<string, string> = {}) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json", "cache-control": "no-store", ...headers },
+  });
+
+async function readBounded(request: Request): Promise<Uint8Array | null> {
+  if (!request.body) return new Uint8Array();
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > MAX_BODY_BYTES) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
+function dailyCap(env: Env): number {
+  const n = Number(env.DAILY_CAP);
+  return Number.isInteger(n) && n >= 1 ? n : DEFAULT_DAILY_CAP;
+}
+
+export default {
+  async fetch(request: Request, env: Env): Promise<Response> {
+    if (new URL(request.url).pathname !== "/v1/report") return reply(404, { status: "not-found" });
+    if (request.method !== "POST") return reply(405, { status: "method-not-allowed" }, { allow: "POST" });
+    if (env.PAUSED === "1") return reply(503, { status: "paused" });
+
+    const mediaType = (request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
+    if (mediaType !== "application/json") return reply(415, { status: "unsupported-media-type" });
+
+    const declared = request.headers.get("content-length");
+    if (declared !== null && Number(declared) > MAX_BODY_BYTES) return reply(413, { status: "too-large" });
+    const bytes = await readBounded(request);
+    if (bytes === null) return reply(413, { status: "too-large" });
+
+    let payload: unknown;
+    try {
+      payload = JSON.parse(new TextDecoder("utf-8", { fatal: true, ignoreBOM: false }).decode(bytes));
+    } catch {
+      return reply(400, { status: "rejected", reason: "payload: not valid JSON" });
+    }
+    const checked = validateReport(payload);
+    if (!checked.ok) return reply(400, { status: "rejected", reason: checked.error });
+
+    const day = new Date().toISOString().slice(0, 10);
+    const result = await storeReport(env.DB, checked.report, day, dailyCap(env));
+    return result === "capped" ? reply(429, { status: "capped" }) : reply(201, { status: "accepted" });
+  },
+
+  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    await runRetention(env.DB, new Date(controller.scheduledTime));
+  },
+} satisfies ExportedHandler<Env>;

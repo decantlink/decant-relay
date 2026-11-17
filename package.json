@@ -1,0 +1,23 @@
+{
+  "name": "decant-relay",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Anonymous report relay for Decant: a Cloudflare Worker + D1 that accepts shape-only reports.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "deploy:staging": "wrangler deploy -e staging"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-plugin": "^1.8.4",
+    "@cloudflare/workers-types": "^5.20261117.1",
+    "@types/node": "^26.6.6",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.12",
+    "wrangler": "^4.164.0"
+  }
+}

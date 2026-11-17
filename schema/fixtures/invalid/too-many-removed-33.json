@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "reportId": "3f2b8c1e-5a47-4d9e-8b06-1c7a2e9d4f10",
+  "kind": "tracker-kept",
+  "host": "www.youtube.com",
+  "appMajor": 1,
+  "date": "2026-11-17",
+  "removed": [
+    {
+      "name": "r0",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r1",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r2",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r3",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r4",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r5",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r6",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r7",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r8",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r9",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r10",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r11",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r12",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r13",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r14",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r15",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r16",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r17",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r18",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r19",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r20",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r21",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r22",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r23",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r24",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r25",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r26",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r27",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r28",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r29",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r30",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r31",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    },
+    {
+      "name": "r32",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      }
+    }
+  ],
+  "kept": [
+    {
+      "name": "si",
+      "shape": {
+        "length": 16,
+        "charset": "base64url"
+      }
+    }
+  ]
+}

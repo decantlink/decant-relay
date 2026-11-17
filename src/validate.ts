@@ -26,7 +26,7 @@ const REPORT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a
 const HOST = /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]$/;
 const DATE = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
 const PARAM_NAME = /^[A-Za-z0-9_.:[\]-]+$/;
-const NOTE_CONTROL = /[\u0000-\u0008\u000b-\u001f\u007f]/;
+const NOTE_FORBIDDEN = /[\u0000-\u0008\u000b-\u001f\u007f-\u009f\u2028\u2029\u202a-\u202e\u2066-\u2069\ud800-\udfff]/u;
 
 const fail = (error: string): Validation => ({ ok: false, error });
 const isObject = (v: unknown): v is Record<string, unknown> =>
@@ -90,7 +90,7 @@ export function validateReport(input: unknown): Validation {
   if (note !== undefined) {
     if (typeof note !== "string") return fail("note: not a string");
     const characters = [...note].length;
-    if (characters < 1 || characters > 280 || NOTE_CONTROL.test(note)) return fail("note: invalid");
+    if (characters < 1 || characters > 280 || NOTE_FORBIDDEN.test(note)) return fail("note: invalid");
   }
   return {
     ok: true,

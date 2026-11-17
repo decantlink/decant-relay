@@ -171,6 +171,34 @@ describe("kill switch", () => {
   it("answers paused even for a bad payload, so the app sees one clear state", async () => {
     expect((await post({ nope: true }, { env: { PAUSED: "1" } })).status).toBe(503);
   });
+
+  it("treats any setting other than unset, empty or 0 as paused, so a typo fails safe", async () => {
+    for (const value of ["1", "true", "yes", " 1 ", "paused"]) {
+      expect((await post(report(), { env: { PAUSED: value } })).status).toBe(503);
+    }
+    for (const value of [undefined, "", "0", " 0 "]) {
+      expect((await post(report(), { env: { PAUSED: value } })).status).toBe(201);
+    }
+  });
+});
+
+describe("failure", () => {
+  it("answers a plain 500 without detail when the database fails", async () => {
+    const broken = {
+      batch: () => Promise.reject(new Error("D1 exploded with secret detail")),
+      prepare: () => ({ bind: () => ({}) }),
+    } as unknown as D1Database;
+    const response = await post(report(), { env: { DB: broken } });
+    expect(response.status).toBe(500);
+    expect(await response.text()).toBe('{"status":"error"}');
+  });
+
+  it("sends nosniff and no-store on every answer", async () => {
+    for (const response of [await post(report()), await post({ nope: true }), await post(report(), { env: { PAUSED: "1" } })]) {
+      expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+      expect(response.headers.get("cache-control")).toBe("no-store");
+    }
+  });
 });
 
 describe("retention", () => {

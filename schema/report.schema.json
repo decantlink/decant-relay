@@ -47,11 +47,11 @@
       "items": { "$ref": "#/$defs/parameter" }
     },
     "note": {
-      "description": "Optional free text typed by the user, sent exactly as typed. 1 to 280 characters (Unicode code points), no control characters except tab and newline.",
+      "description": "Optional free text typed by the user, sent exactly as typed. 1 to 280 characters (Unicode code points), no control characters except tab and newline, and no line or paragraph separators, bidirectional overrides or unpaired surrogates.",
       "type": "string",
       "minLength": 1,
       "maxLength": 280,
-      "pattern": "^[^\\u0000-\\u0008\\u000b-\\u001f\\u007f]*$"
+      "pattern": "^[^\\u0000-\\u0008\\u000b-\\u001f\\u007f-\\u009f\\u2028\\u2029\\u202a-\\u202e\\u2066-\\u2069\\ud800-\\udfff]*$"
     }
   },
   "$defs": {

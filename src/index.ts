@@ -14,7 +14,7 @@ const DEFAULT_DAILY_CAP = 5000;
 const reply = (status: number, body: Record<string, string>, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json", "cache-control": "no-store", ...headers },
+    headers: { "content-type": "application/json", "cache-control": "no-store", "x-content-type-options": "nosniff", ...headers },
   });
 
 async function readBounded(request: Request): Promise<Uint8Array | null> {
@@ -41,6 +41,8 @@ async function readBounded(request: Request): Promise<Uint8Array | null> {
   return bytes;
 }
 
+const isPaused = (env: Env) => env.PAUSED !== undefined && env.PAUSED.trim() !== "" && env.PAUSED.trim() !== "0";
+
 function dailyCap(env: Env): number {
   const n = Number(env.DAILY_CAP);
   return Number.isInteger(n) && n >= 1 ? n : DEFAULT_DAILY_CAP;
@@ -50,7 +52,7 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (new URL(request.url).pathname !== "/v1/report") return reply(404, { status: "not-found" });
     if (request.method !== "POST") return reply(405, { status: "method-not-allowed" }, { allow: "POST" });
-    if (env.PAUSED === "1") return reply(503, { status: "paused" });
+    if (isPaused(env)) return reply(503, { status: "paused" });
 
     const mediaType = (request.headers.get("content-type") ?? "").split(";")[0].trim().toLowerCase();
     if (mediaType !== "application/json") return reply(415, { status: "unsupported-media-type" });
@@ -70,7 +72,12 @@ export default {
     if (!checked.ok) return reply(400, { status: "rejected", reason: checked.error });
 
     const day = new Date().toISOString().slice(0, 10);
-    const result = await storeReport(env.DB, checked.report, day, dailyCap(env));
+    let result;
+    try {
+      result = await storeReport(env.DB, checked.report, day, dailyCap(env));
+    } catch {
+      return reply(500, { status: "error" });
+    }
     return result === "capped" ? reply(429, { status: "capped" }) : reply(201, { status: "accepted" });
   },
 

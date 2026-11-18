@@ -22,5 +22,8 @@ export async function runRetention(db: D1Database, now: Date): Promise<void> {
     fold("kept"),
     db.prepare("DELETE FROM reports WHERE day < ?1").bind(cutoff),
     db.prepare("DELETE FROM daily_counter WHERE day < ?1").bind(cutoff),
+    db.prepare(
+      "INSERT INTO raw_total (id, n) SELECT 1, COUNT(*) FROM reports WHERE true ON CONFLICT (id) DO UPDATE SET n = excluded.n",
+    ),
   ]);
 }

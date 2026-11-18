@@ -6,10 +6,12 @@ export interface Env {
   DB: D1Database;
   PAUSED?: string;
   DAILY_CAP?: string;
+  MAX_RAW_REPORTS?: string;
 }
 
 const MAX_BODY_BYTES = 16_384;
 const DEFAULT_DAILY_CAP = 5000;
+const DEFAULT_MAX_RAW_REPORTS = 50_000;
 
 const reply = (status: number, body: Record<string, string>, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(body), {
@@ -43,10 +45,10 @@ async function readBounded(request: Request): Promise<Uint8Array | null> {
 
 const isPaused = (env: Env) => env.PAUSED !== undefined && env.PAUSED.trim() !== "" && env.PAUSED.trim() !== "0";
 
-function dailyCap(env: Env): number {
-  const n = Number(env.DAILY_CAP);
-  return Number.isInteger(n) && n >= 1 ? n : DEFAULT_DAILY_CAP;
-}
+const positiveInteger = (value: string | undefined, fallback: number) => {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 1 ? n : fallback;
+};
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -74,7 +76,13 @@ export default {
     const day = new Date().toISOString().slice(0, 10);
     let result;
     try {
-      result = await storeReport(env.DB, checked.report, day, dailyCap(env));
+      result = await storeReport(
+        env.DB,
+        checked.report,
+        day,
+        positiveInteger(env.DAILY_CAP, DEFAULT_DAILY_CAP),
+        positiveInteger(env.MAX_RAW_REPORTS, DEFAULT_MAX_RAW_REPORTS),
+      );
     } catch {
       return reply(500, { status: "error" });
     }

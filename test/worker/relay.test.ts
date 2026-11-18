@@ -23,7 +23,7 @@ const post = (body: unknown, options: { headers?: Record<string, string>; env?: 
 const rows = async (table: string) => (await env.DB.prepare(`SELECT * FROM ${table}`).all()).results;
 
 beforeEach(async () => {
-  await env.DB.batch(["reports", "daily_counter", "counts"].map((t) => env.DB.prepare(`DELETE FROM ${t}`)));
+  await env.DB.batch(["reports", "daily_counter", "counts", "raw_total"].map((t) => env.DB.prepare(`DELETE FROM ${t}`)));
 });
 
 describe("accepts", () => {
@@ -160,6 +160,21 @@ describe("daily cap", () => {
   });
 });
 
+describe("storage ceiling", () => {
+  it("answers 429 once the raw reports reach the ceiling, repeats still succeed", async () => {
+    const options = { env: { MAX_RAW_REPORTS: "2" } };
+    const first = report();
+    expect((await post(first, options)).status).toBe(201);
+    expect((await post(report(), options)).status).toBe(201);
+    const over = await post(report(), options);
+    expect(over.status).toBe(429);
+    expect(await over.json()).toEqual({ status: "capped" });
+    expect((await post(first, options)).status).toBe(201);
+    expect(await rows("reports")).toHaveLength(2);
+    expect(await rows("raw_total")).toEqual([{ id: 1, n: 2 }]);
+  });
+});
+
 describe("kill switch", () => {
   it("answers 503 paused and stores nothing", async () => {
     const response = await post(report(), { env: { PAUSED: "1" } });
@@ -246,6 +261,16 @@ describe("retention", () => {
     const counts = await rows("counts");
     expect(counts).toEqual([{ host: "example.com", param: "utm_source", kind: "tracker-kept", outcome: "removed", n: 1 }]);
     expect(JSON.stringify(counts)).not.toContain("private note");
+  });
+
+  it("resyncs the raw total so room opens up after old reports are deleted", async () => {
+    const options = { env: { MAX_RAW_REPORTS: "2" } };
+    await env.DB.batch([insert("2026-01-01", "example.com", ["a"], []), insert("2026-01-02", "example.com", ["a"], [])]);
+    await env.DB.prepare("INSERT INTO raw_total (id, n) VALUES (1, 2)").run();
+    expect((await post(report(), options)).status).toBe(429);
+    await runRetention(env.DB, NOW);
+    expect(await rows("raw_total")).toEqual([{ id: 1, n: 0 }]);
+    expect((await post(report(), options)).status).toBe(201);
   });
 
   it("runs from the scheduled handler", async () => {

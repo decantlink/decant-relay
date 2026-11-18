@@ -46,11 +46,12 @@ parameter and kind are kept, without report IDs or notes.
 | 400 | `{"status":"rejected","reason":"…"}` | Not valid JSON, or off-schema; `reason` names a field, never a value |
 | 413 | `{"status":"too-large"}` | Body over 16 KiB |
 | 415 | `{"status":"unsupported-media-type"}` | Not `application/json` |
-| 429 | `{"status":"capped"}` | The global daily limit is reached; try again later |
+| 429 | `{"status":"capped"}` | The daily limit or the stored-reports ceiling is reached; try again later |
 | 503 | `{"status":"paused"}` | The kill switch is on |
 
 Abuse limits: a size cap, strict validation, a global daily cap (`DAILY_CAP`, default 5000 accepted
-reports per day), and one edge rate-limit rule configured in Cloudflare. The kill switch is the
+reports per day), a ceiling on stored raw reports (`MAX_RAW_REPORTS`, default 50,000, so
+the free database cannot be filled), and one edge rate-limit rule configured in Cloudflare. The kill switch is the
 `PAUSED` variable (`1` pauses the relay).
 
 ## Develop

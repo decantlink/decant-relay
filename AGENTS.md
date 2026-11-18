@@ -11,12 +11,17 @@ them without the sender's IP address. It also owns the report schema and fixture
 - `src/validate.ts` — hand-written validator for the schema (cheap on the free plan's 10 ms CPU)
 - `src/index.ts` — `POST /v1/report`, kill switch, size cap; `src/store.ts` — insert, dedupe, daily cap
 - `src/retention.ts` — scheduled job: fold reports older than 180 days into counts, delete them
+- `src/digest.ts` — daily digest email after retention (counts only; marker in `digest_state`)
+- `scripts/triage.ts`, `scripts/triage-sql.ts` — read-only triage (`npm run triage`); the SQL is
+  mirrored in the README's saved queries and a test keeps them equal
+- `scripts/staging-seed.sql`, `scripts/staging-cleanup.sql` — synthetic rows for trying the digest on staging
 - `migrations/` — D1 schema; `wrangler.json` — config, env `staging`; `test/` — vitest
 
 ## Commands
 
 - `npm ci`, then `npm test` (schema tests in Node, Worker tests in the local workerd runtime)
 - `npm run typecheck`
+- `npm run triage` — read-only report views (production by default, `--staging`); needs a Cloudflare login
 - `npm run deploy:staging` — maintainers only; needs a Cloudflare API token in the environment
 
 ## Conventions
@@ -26,7 +31,12 @@ them without the sender's IP address. It also owns the report schema and fixture
 - Never read, store or log IP or header data. No `console.*` in `src/` (a test enforces it).
 - `wrangler.json` keeps `observability.enabled=false`, `logpush=false`, no `tail_consumers`,
   `workers_dev=false` (a test enforces it). Cloudflare turns Workers Logs on by default.
-- No secrets, account IDs, tokens or `.dev.vars` in the repo; secrets live in Cloudflare only.
+- No secrets, account IDs, tokens or `.dev.vars` in the repo; secrets live in Cloudflare only. The
+  digest addresses (`DIGEST_TO`, `DIGEST_FROM`) are dashboard variables, not in `wrangler.json`.
+- Notes are users' free text. Only the maintainer runs `npm run triage -- --notes`, personally;
+  agents never run it and never read production notes. Test with fixtures and seeded staging rows.
+- The digest never contains notes, report IDs or parameter values; its input type has no field for them.
+- Apply a new migration before deploying code that uses it; the digest otherwise fails its cron run.
 
 ## Contracts
 

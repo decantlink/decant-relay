@@ -8,6 +8,7 @@
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "triage": "node scripts/triage.ts",
     "deploy:staging": "wrangler deploy -e staging",
     "deploy:production": "wrangler deploy -e production"
   },

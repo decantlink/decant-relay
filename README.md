@@ -24,7 +24,7 @@ field is rejected):
 One row per report: report ID, the day the relay received it (a date, no time), kind, host, app
 major version, note, and the parameter names and shapes. Nothing from the connection or the request
 headers is read or stored; see [`src/index.ts`](src/index.ts) and [`src/store.ts`](src/store.ts).
-Raw reports are deleted after 180 days ([`src/retention.ts`](src/retention.ts)); counts per host,
+Reports are summarised in a daily digest (see below). Raw reports are deleted after 180 days ([`src/retention.ts`](src/retention.ts)); counts per host,
 parameter and kind are kept, without report IDs or notes.
 
 ## What this does not prove
@@ -55,6 +55,82 @@ the free database cannot be filled), and one edge rate-limit rule configured in 
 `PAUSED` variable set in the Cloudflare dashboard, not in `wrangler.json` (`keep_vars` stops a deploy
 from resetting it). Any value except unset, empty or `0` pauses the relay.
 
+## Daily digest
+After the nightly retention run, the Worker emails the maintainer a plain-text digest through
+Cloudflare Email. It is sent only when there are new reports or a warning, plus a short check every Monday
+(UTC) so a silent relay is noticeable. It covers whole UTC days since the last digest and contains:
+- new reports by kind
+- site and parameter pairs with 3 or more reports, and "N reports from other sites" for the rest
+- the age of the oldest stored report (a warning above 181 days means retention failed), how close the
+  day's accepted count is to `DAILY_CAP` and the stored count to `MAX_RAW_REPORTS` (warnings at 80%), and
+  whether the relay is paused
+- a link to the D1 console
+
+It never contains notes, report IDs or parameter values. The recipient and sender are the `DIGEST_TO` and
+`DIGEST_FROM` variables, set in the Cloudflare dashboard like `PAUSED` (never in this repository). The
+recipient must be a verified Email Routing destination and the sender an address on a domain onboarded to
+Email Routing. Without the variables no email is sent. A failed send or retention run fails that cron run
+and is retried the next night: the digest remembers only the last day it covered (`digest_state`).
+## Triage
+Read-only views of the reports, for the maintainer. No dashboard or web page exists.
+```sh
+npm run triage                              # production: the last 7 days
+npm run triage -- --staging --since 2026-11-01
+npm run triage -- --notes                   # adds the notes section, to the terminal only
+```
+It needs a Cloudflare login (`npx wrangler login`) and runs the SELECT statements below through
+`wrangler d1 execute --remote`; it refuses anything that is not a SELECT. It shows the groups and counts, the
+age of the oldest report, today's accepted count against `DAILY_CAP`, the stored count against
+`MAX_RAW_REPORTS`, and whether the relay is paused (a text request that stores nothing).
+
+**Notes are free text from users. Only the maintainer runs `--notes`, personally; AI agents never do**
+(the default output has structured fields only, and may be run by anyone).
+
+The same questions as saved queries for the Cloudflare D1 console (dashboard, D1, the database, Console).
+Replace the date `2026-11-01` with the day to look back to:
+
+**New reports by kind**
+
+```sql
+SELECT kind, COUNT(*) AS n FROM reports WHERE day >= '2026-11-01' GROUP BY kind ORDER BY kind;
+```
+
+**Site and parameter groups, newest first**
+
+```sql
+WITH fresh AS (SELECT id, day, host, removed, kept FROM reports WHERE day >= '2026-11-01'),
+pairs AS (
+  SELECT fresh.id AS id, fresh.day AS day, fresh.host AS host, json_extract(j.value, '$.name') AS param FROM fresh, json_each(fresh.removed) j
+  UNION
+  SELECT fresh.id, fresh.day, fresh.host, json_extract(j.value, '$.name') FROM fresh, json_each(fresh.kept) j
+)
+SELECT host, param, COUNT(*) AS n, MAX(day) AS latest FROM pairs GROUP BY host, param ORDER BY MAX(id) DESC LIMIT 50;
+```
+
+**Age of the oldest raw report (retention failed if over 181 days)**
+
+```sql
+SELECT MIN(day) AS oldest FROM reports;
+```
+
+**Accepted today against DAILY_CAP**
+
+```sql
+SELECT date('now') AS day, COALESCE((SELECT n FROM daily_counter WHERE day = date('now')), 0) AS accepted;
+```
+
+**Stored raw reports against MAX_RAW_REPORTS**
+
+```sql
+SELECT COALESCE((SELECT n FROM raw_total WHERE id = 1), 0) AS raw_total;
+```
+
+**Notes (maintainer only; free text from users)**
+
+```sql
+SELECT day, kind, host, note FROM reports WHERE note IS NOT NULL AND day >= '2026-11-01' ORDER BY id DESC LIMIT 50;
+```
+
 ## Develop
 
 ```sh
@@ -69,7 +145,11 @@ Client authors: test your payload builder against [`schema/fixtures/`](schema/fi
 ## Deploy
 
 Maintainers only. Create the D1 database, put its ID in `wrangler.json`, apply `migrations/`, then
-`npm run deploy:staging`. API tokens stay in your environment, never in the repository.
+`npm run deploy:staging`. Apply new migrations before deploying code that uses them. API tokens stay
+in your environment, never in the repository.
+
+For the digest: onboard the sending domain to Cloudflare Email Routing, verify the recipient address as a
+destination, then set `DIGEST_TO` and `DIGEST_FROM` in the dashboard (Worker, Settings, Variables).
 
 ## License
 

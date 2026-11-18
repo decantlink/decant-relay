@@ -6,7 +6,7 @@ export default defineConfig({
   test: {
     projects: [
       {
-        test: { name: "schema", include: ["test/schema/**/*.test.ts"], environment: "node" },
+        test: { name: "schema", include: ["test/schema/**/*.test.ts", "test/triage/**/*.test.ts"], environment: "node" },
       },
       {
         plugins: [

@@ -9,6 +9,7 @@
   "logpush": false,
   "keep_vars": true,
   "triggers": { "crons": ["17 3 * * *"] },
+  "send_email": [{ "name": "EMAIL" }],
   "vars": { "DAILY_CAP": "5000", "MAX_RAW_REPORTS": "50000" },
   "d1_databases": [
     {
@@ -26,7 +27,8 @@
       "observability": { "enabled": false },
       "logpush": false,
       "triggers": { "crons": ["17 3 * * *"] },
-      "vars": { "DAILY_CAP": "5000", "MAX_RAW_REPORTS": "50000" },
+      "send_email": [{ "name": "EMAIL" }],
+      "vars": { "DAILY_CAP": "5000", "MAX_RAW_REPORTS": "50000", "DIGEST_LABEL": "staging" },
       "routes": [{ "pattern": "report-staging.decant.link", "custom_domain": true }],
       "d1_databases": [
         {
@@ -43,6 +45,7 @@
       "observability": { "enabled": false },
       "logpush": false,
       "triggers": { "crons": ["17 3 * * *"] },
+      "send_email": [{ "name": "EMAIL" }],
       "vars": { "DAILY_CAP": "5000", "MAX_RAW_REPORTS": "50000" },
       "routes": [{ "pattern": "report.decant.link", "custom_domain": true }],
       "d1_databases": [

@@ -1,13 +1,9 @@
+import { type DigestEnv, sendDigest } from "./digest";
 import { runRetention } from "./retention";
 import { storeReport } from "./store";
 import { validateReport } from "./validate";
 
-export interface Env {
-  DB: D1Database;
-  PAUSED?: string;
-  DAILY_CAP?: string;
-  MAX_RAW_REPORTS?: string;
-}
+export type Env = DigestEnv;
 
 const MAX_BODY_BYTES = 16_384;
 const DEFAULT_DAILY_CAP = 5000;
@@ -90,6 +86,18 @@ export default {
   },
 
   async scheduled(controller: ScheduledController, env: Env): Promise<void> {
-    await runRetention(env.DB, new Date(controller.scheduledTime));
+    const now = new Date(controller.scheduledTime);
+    let failure: unknown;
+    try {
+      await runRetention(env.DB, now);
+    } catch (error) {
+      failure = error;
+    }
+    try {
+      await sendDigest(env, now, failure !== undefined);
+    } catch (error) {
+      failure ??= error;
+    }
+    if (failure !== undefined) throw failure;
   },
 } satisfies ExportedHandler<Env>;

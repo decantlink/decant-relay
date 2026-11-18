@@ -51,8 +51,9 @@ parameter and kind are kept, without report IDs or notes.
 
 Abuse limits: a size cap, strict validation, a global daily cap (`DAILY_CAP`, default 5000 accepted
 reports per day), a ceiling on stored raw reports (`MAX_RAW_REPORTS`, default 50,000, so
-the free database cannot be filled), and one edge rate-limit rule configured in Cloudflare. The kill switch is the
-`PAUSED` variable (`1` pauses the relay).
+the free database cannot be filled), and one edge rate-limit rule configured in Cloudflare. The kill switch is a
+`PAUSED` variable set in the Cloudflare dashboard, not in `wrangler.json` (`keep_vars` stops a deploy
+from resetting it). Any value except unset, empty or `0` pauses the relay.
 
 ## Develop
 

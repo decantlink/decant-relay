@@ -48,6 +48,10 @@ describe("wrangler.json", () => {
       expect(scope.workers_dev).toBe(false);
       expect(scope.preview_urls).toBe(false);
     });
+    it(`${label}: the kill switch is not a config variable, so a deploy cannot reset it`, () => {
+      expect(scope.keep_vars).toBe(true);
+      expect(Object.keys((scope.vars as object) ?? {})).not.toContain("PAUSED");
+    });
   }
 });
 

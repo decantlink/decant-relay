@@ -49,10 +49,17 @@ describe("wrangler.json", () => {
       expect(scope.preview_urls).toBe(false);
     });
     it(`${label}: the kill switch is not a config variable, so a deploy cannot reset it`, () => {
-      expect(scope.keep_vars).toBe(true);
       expect(Object.keys((scope.vars as object) ?? {})).not.toContain("PAUSED");
     });
   }
+});
+
+describe("wrangler.json kill switch", () => {
+  it("keeps dashboard variables on deploy (keep_vars is valid only at the top level)", () => {
+    const config = JSON.parse(readFileSync(resolve(import.meta.dirname, "../../wrangler.json"), "utf8"));
+    expect(config.keep_vars).toBe(true);
+    for (const scope of Object.values<Record<string, unknown>>(config.env)) expect(scope.keep_vars).toBeUndefined();
+  });
 });
 
 describe("source", () => {

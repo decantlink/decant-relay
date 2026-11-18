@@ -31,7 +31,7 @@
         {
           "binding": "DB",
           "database_name": "decant-relay-staging",
-          "database_id": "00000000-0000-0000-0000-000000000000",
+          "database_id": "785dcfd7-e6bc-48f9-a02e-b89e30bd3d19",
           "migrations_dir": "migrations"
         }
       ]

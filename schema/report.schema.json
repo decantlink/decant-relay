@@ -4,7 +4,7 @@
   "description": "A shape-only report about one cleaned link. It carries no link, no parameter values and no path. The relay rejects anything that does not match, extra fields included.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "reportId", "kind", "host", "appMajor", "date", "rulesGeneration", "parameters"],
+  "required": ["schemaVersion", "reportId", "reasons", "host", "appVersion", "appBuild", "date", "rulesGeneration", "parameters"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "reportId": {
@@ -12,9 +12,13 @@
       "type": "string",
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
-    "kind": {
-      "description": "tracker-kept: a tracking parameter was not removed. link-broke: the cleaned link stopped working.",
-      "enum": ["tracker-kept", "link-broke"]
+    "reasons": {
+      "description": "Why the person reports the link: tracker-kept (a tracking parameter was not removed), link-broke (the cleaned link stopped working), or both. One or two unique values.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "enum": ["tracker-kept", "link-broke"] }
     },
     "host": {
       "description": "Lowercase host name of the link. No scheme, port, path, user info or IP address (the last label must start with a letter).",
@@ -22,11 +26,17 @@
       "maxLength": 253,
       "pattern": "^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]$"
     },
-    "appMajor": {
-      "description": "Major version of the app that sent the report.",
+    "appVersion": {
+      "description": "Marketing version of the app that sent the report: two or three dotted numbers, each 1 to 4 digits (for example 1.4 or 1.4.2).",
+      "type": "string",
+      "maxLength": 14,
+      "pattern": "^[0-9]{1,4}(\\.[0-9]{1,4}){1,2}$"
+    },
+    "appBuild": {
+      "description": "Build number of the app that sent the report.",
       "type": "integer",
       "minimum": 1,
-      "maximum": 999
+      "maximum": 999999
     },
     "date": {
       "description": "Calendar day of the report (YYYY-MM-DD), rounded to the day by the sender. Checked for shape only; the relay stores its own receive day.",

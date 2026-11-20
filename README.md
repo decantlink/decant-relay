@@ -11,26 +11,27 @@ the whole server, public so you can check what it accepts and stores.
 Only what [`schema/report.schema.json`](schema/report.schema.json) allows, nothing else (any extra
 field is rejected):
 
-- the report kind: `tracker-kept` or `link-broke`
+- the reasons for the report: `tracker-kept`, `link-broke` or both
 - the host (for example `www.youtube.com`), never a path or full link
 - every parameter of the link (at most 32): its name, the **shape** of its value (length and character
   class such as `digits` or `base64url`, never the value), what happened to it (`removed-by-rules`,
   `removed-by-you`, `kept` or `restored-by-you`) and whether the person flagged it (ticked it in the
   report as the one they mean)
 - the generation number of the rule set the app used, so a report is read against the right rules
-- the app's major version and the day
+- the app's version (for example `1.4.2`) and build number, and the day
 - a random report ID, so a retried send is stored once
 - an optional note of up to 280 characters, sent exactly as the user typed it
 
-`schemaVersion` is 1. The parameter list above replaced the first draft's separate removed and kept lists
+`schemaVersion` is 1. The reasons (replacing a single kind) and the full app version and build (replacing the major
+version) changed version 1 in place on 21 Nov 2026, before any released app sent a report. The parameter list above replaced the first draft's separate removed and kept lists
 on 20 Nov 2026, before any released app sent a report.
 ## What is stored
 
-One row per report: report ID, the day the relay received it (a date, no time), kind, host, app
-major version, note, rules generation, and the parameters (name, shape, outcome, flagged). Nothing from the connection or the request
+One row per report: report ID, the day the relay received it (a date, no time), reasons, host, app
+version and build, note, rules generation, and the parameters (name, shape, outcome, flagged). Nothing from the connection or the request
 headers is read or stored; see [`src/index.ts`](src/index.ts) and [`src/store.ts`](src/store.ts).
 Reports are summarised in a daily digest (see below). Raw reports are deleted after 180 days ([`src/retention.ts`](src/retention.ts)); counts per host,
-parameter, kind and outcome (with how many were flagged) are kept, without report IDs or notes.
+parameter, reason and outcome (with how many were flagged) are kept, without report IDs or notes.
 
 ## What this does not prove
 
@@ -64,7 +65,7 @@ from resetting it). Any value except unset, empty or `0` pauses the relay.
 After the nightly retention run, the Worker emails the maintainer a plain-text digest through
 Cloudflare Email. It is sent only when there are new reports or a warning, plus a short check every Monday
 (UTC) so a silent relay is noticeable. It covers whole UTC days since the last digest and contains:
-- new reports by kind
+- new reports, and how many for each reason (a report with both reasons counts under each)
 - site and parameter pairs with 3 or more reports, pairs with flagged reports first, then newest, and
   "N reports from other sites" for the rest (it shows no flag counts)
 - the age of the oldest stored report (a warning above 181 days means retention failed), how close the
@@ -95,10 +96,11 @@ age of the oldest report, today's accepted count against `DAILY_CAP`, the stored
 The same questions as saved queries for the Cloudflare D1 console (dashboard, D1, the database, Console).
 Replace the date `2026-11-01` with the day to look back to:
 
-**New reports by kind**
+**New reports, and by reason** (a report with both reasons counts under each)
 
 ```sql
-SELECT kind, COUNT(*) AS n FROM reports WHERE day >= '2026-11-01' GROUP BY kind ORDER BY kind;
+SELECT COUNT(*) AS n FROM reports WHERE day >= '2026-11-01';
+SELECT j.value AS reason, COUNT(*) AS n FROM reports r, json_each(r.reasons) j WHERE r.day >= '2026-11-01' GROUP BY j.value ORDER BY j.value;
 ```
 
 **Site and parameter groups, flagged first, then newest**
@@ -139,7 +141,7 @@ SELECT COALESCE((SELECT n FROM raw_total WHERE id = 1), 0) AS raw_total;
 **Notes (maintainer only; free text from users)**
 
 ```sql
-SELECT day, kind, host, note FROM reports WHERE note IS NOT NULL AND day >= '2026-11-01' ORDER BY id DESC LIMIT 50;
+SELECT day, reasons, host, note FROM reports WHERE note IS NOT NULL AND day >= '2026-11-01' ORDER BY id DESC LIMIT 50;
 ```
 
 ## Develop

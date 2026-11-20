@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
   "reportId": "3f2b8c1e-5a47-4d9e-8b06-1c7a2e9d4f10",
-  "kind": "tracker-kept",
+  "reasons": ["tracker-kept"],
   "host": "192.168.0.1",
-  "appMajor": 1,
+  "appVersion": "1.4.2",
+  "appBuild": 42,
   "date": "2026-11-17",
   "rulesGeneration": 17,
   "parameters": [

@@ -47,9 +47,10 @@ const rows: Record<string, Record<string, unknown>[]> = {};
 for (const s of statements) rows[s.name] = await query(s.sql);
 
 const out: string[] = [`Decant relay triage: ${envName}, since ${since}`, ""];
-const kinds = rows.kinds.map((r) => `${printable(String(r.kind))} ${r.n}`);
-const total = rows.kinds.reduce((sum, r) => sum + Number(r.n), 0);
-out.push(`New reports since ${since}: ${total}${kinds.length ? ` (${kinds.join(", ")})` : ""}`, "", "Site and parameter groups, flagged first, then newest:");
+const reasons = rows.reasons.map((r) => `${printable(String(r.reason))} ${r.n}`);
+const total = Number(rows.total[0].n);
+const overlap = rows.reasons.reduce((sum, r) => sum + Number(r.n), 0) > total;
+out.push(`New reports since ${since}: ${total}${reasons.length ? ` (${reasons.join(", ")}${overlap ? "; a report with both reasons counts under each" : ""})` : ""}`, "", "Site and parameter groups, flagged first, then newest:");
 if (rows.groups.length === 0) out.push("  none");
 for (const g of rows.groups) out.push(`  ${printable(String(g.host))} / ${printable(String(g.param))}: ${g.n}, flagged ${g.flagged} (latest ${g.latest})`);
 out.push("", "Parameter outcomes (flagged by the person):");
@@ -70,6 +71,6 @@ out.push(
 if (values.notes) {
   out.push("", "NOTES (terminal only, user free text; do not paste anywhere):");
   if (rows.notes.length === 0) out.push("  none");
-  for (const n of rows.notes) out.push(`  ${n.day} ${printable(String(n.kind))} ${printable(String(n.host))}: ${printable(String(n.note))}`);
+  for (const n of rows.notes) out.push(`  ${n.day} ${printable(String(n.reasons))} ${printable(String(n.host))}: ${printable(String(n.note))}`);
 }
 console.log(out.join("\n"));

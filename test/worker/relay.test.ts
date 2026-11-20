@@ -142,6 +142,14 @@ describe("rejects", () => {
 });
 
 describe("storage", () => {
+  it("stores both reasons sorted as a JSON array, with the full version and build", async () => {
+    const response = await post(report({ reasons: ["tracker-kept", "link-broke"], appVersion: "1.4.2", appBuild: 42 }));
+    expect(response.status).toBe(201);
+    const [row] = (await rows("reports")) as { reasons: string; app_version: string; app_build: number }[];
+    expect(row.reasons).toBe('["link-broke","tracker-kept"]');
+    expect([row.app_version, row.app_build]).toEqual(["1.4.2", 42]);
+  });
+
   it("stores only report fields and the receive day, never network or header data", async () => {
     const response = await post(report({ note: "hello" }), {
       headers: {
@@ -156,7 +164,7 @@ describe("storage", () => {
     const stored = await rows("reports");
     expect(stored).toHaveLength(1);
     expect(Object.keys(stored[0]).sort()).toEqual(
-      ["app_major", "day", "host", "id", "kind", "note", "parameters", "report_id", "rules_generation"].sort(),
+      ["app_build", "app_version", "day", "host", "id", "note", "parameters", "reasons", "report_id", "rules_generation"].sort(),
     );
     const dump = JSON.stringify([stored, await rows("daily_counter"), await rows("counts")]);
     for (const leak of ["203.0.113.77", "DecantTest", "pt-PT", "secret-token"]) expect(dump).not.toContain(leak);
@@ -258,15 +266,15 @@ describe("retention", () => {
   type Stored = { name: string; outcome: string; flagged: boolean };
   const insertParameters = (day: string, host: string, parameters: Stored[], kind = "tracker-kept") =>
     env.DB.prepare(
-      "INSERT INTO reports (report_id, day, kind, host, app_major, note, rules_generation, parameters) VALUES (?, ?, ?, ?, 1, 'private note', 17, ?)",
-    ).bind(freshId(), day, kind, host, JSON.stringify(parameters.map((p) => ({ ...p, length: 3, charset: "alpha" }))));
+      "INSERT INTO reports (report_id, day, reasons, host, app_version, app_build, note, rules_generation, parameters) VALUES (?, ?, ?, ?, '1.4.2', 42, 'private note', 17, ?)",
+    ).bind(freshId(), day, JSON.stringify(kind.split(",")), host, JSON.stringify(parameters.map((p) => ({ ...p, length: 3, charset: "alpha" }))));
   const insert = (day: string, host: string, removed: string[], kept: string[], kind = "tracker-kept") =>
     insertParameters(day, host, [
       ...removed.map((name) => ({ name, outcome: "removed-by-rules", flagged: false })),
       ...kept.map((name) => ({ name, outcome: "kept", flagged: false })),
     ], kind);
 
-  it("deletes raw reports older than 180 days and keeps counts per host, parameter and kind", async () => {
+  it("deletes raw reports older than 180 days and keeps counts per host, parameter and reason", async () => {
     await env.DB.batch([
       insert("2026-05-01", "www.youtube.com", ["utm_source"], ["si"]),
       insert("2026-05-02", "www.youtube.com", ["utm_source"], ["si"]),
@@ -280,13 +288,20 @@ describe("retention", () => {
 
     const left = (await rows("reports")) as { day: string }[];
     expect(left.map((r) => r.day).sort()).toEqual(["2026-05-21", "2026-05-22", "2026-11-17"]);
-    const counts = (await rows("counts")) as { host: string; param: string; kind: string; outcome: string; n: number }[];
-    const pick = (host: string, param: string, kind: string, outcome: string) =>
-      counts.find((c) => c.host === host && c.param === param && c.kind === kind && c.outcome === outcome)?.n;
+    const counts = (await rows("counts")) as { host: string; param: string; reason: string; outcome: string; n: number }[];
+    const pick = (host: string, param: string, reason: string, outcome: string) =>
+      counts.find((c) => c.host === host && c.param === param && c.reason === reason && c.outcome === outcome)?.n;
     expect(pick("www.youtube.com", "utm_source", "tracker-kept", "removed-by-rules")).toBe(2);
     expect(pick("www.youtube.com", "si", "tracker-kept", "kept")).toBe(2);
     expect(pick("www.youtube.com", "si", "link-broke", "kept")).toBe(1);
     expect(counts).toHaveLength(3);
+  });
+
+  it("counts a report with both reasons under each reason", async () => {
+    await env.DB.batch([insert("2026-01-01", "example.com", [], ["si"], "link-broke,tracker-kept")]);
+    await runRetention(env.DB, NOW);
+    const counts = (await rows("counts")) as { reason: string; n: number }[];
+    expect(counts.map((c) => [c.reason, c.n]).sort()).toEqual([["link-broke", 1], ["tracker-kept", 1]]);
   });
 
   it("counts each outcome separately, with how many of them the person flagged", async () => {
@@ -307,7 +322,7 @@ describe("retention", () => {
     await runRetention(env.DB, NOW);
     expect(await rows("reports")).toHaveLength(0);
     const counts = await rows("counts");
-    expect(counts).toEqual([{ host: "example.com", param: "utm_source", kind: "tracker-kept", outcome: "removed-by-rules", n: 1, flagged_n: 0 }]);
+    expect(counts).toEqual([{ host: "example.com", param: "utm_source", reason: "tracker-kept", outcome: "removed-by-rules", n: 1, flagged_n: 0 }]);
     expect(JSON.stringify(counts)).not.toContain("private note");
   });
 

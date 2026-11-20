@@ -22,7 +22,9 @@ export interface DigestEnv {
 /** Everything a digest may show. It has no field for notes, report IDs or parameter values. */
 export interface DigestInput {
   label: string;
-  newByKind: Record<string, number>;
+  newTotal: number;
+  /** A report with both reasons is counted under each. */
+  newByReason: Record<string, number>;
   pairs: { host: string; param: string; n: number }[];
   pairsOmitted: boolean;
   otherReports: number;
@@ -40,7 +42,7 @@ const plain = (text: string) => text.replace(/[^\x20-\x7e]/g, "?");
 
 /** Builds the digest, or null on a quiet day: no new reports, no warning and not the weekly heartbeat. */
 export function buildDigest(input: DigestInput): { subject: string; text: string } | null {
-  const total = Object.values(input.newByKind).reduce((sum, n) => sum + n, 0);
+  const total = input.newTotal;
   const warnings: string[] = [];
   if (input.retentionFailed) warnings.push("The retention job failed on its last run.");
   if (input.oldestAgeDays !== null && input.oldestAgeDays > RETENTION_WARN_DAYS)
@@ -53,10 +55,14 @@ export function buildDigest(input: DigestInput): { subject: string; text: string
 
   const prefix = input.label ? `[${plain(input.label)}] ` : "";
   const subject = `${prefix}Decant reports: ${total} new${warnings.length > 0 ? ", warning" : ""}`;
-  const kinds = Object.entries(input.newByKind)
-    .map(([kind, n]) => `${plain(kind)} ${n}`)
+  const reasons = Object.entries(input.newByReason)
+    .map(([reason, n]) => `${plain(reason)} ${n}`)
     .join(", ");
-  const lines = [`New since the last digest: ${total}${kinds ? ` (${kinds})` : ""}`, ""];
+  const overlap = Object.values(input.newByReason).reduce((sum, n) => sum + n, 0) > total;
+  const lines = [
+    `New since the last digest: ${total}${reasons ? ` (${reasons}${overlap ? "; a report with both reasons counts under each" : ""})` : ""}`,
+    "",
+  ];
   if (input.pairs.length > 0) {
     lines.push(`Site and parameter pairs with ${PAIR_THRESHOLD} or more reports, flagged first, then newest:`);
     for (const p of input.pairs) lines.push(`- ${plain(p.host)} / ${plain(p.param)}: ${p.n}`);
@@ -102,8 +108,11 @@ async function gather(
   retentionFailed: boolean,
 ): Promise<DigestInput> {
   const db = env.DB;
-  const [kinds, pairs, covered, oldest, counter, raw] = await db.batch([
-    db.prepare("SELECT kind, COUNT(*) AS n FROM reports WHERE day > ?1 AND day <= ?2 GROUP BY kind ORDER BY kind").bind(lastDay, throughDay),
+  const [reasons, newTotal, pairs, covered, oldest, counter, raw] = await db.batch([
+    db
+      .prepare("SELECT j.value AS reason, COUNT(*) AS n FROM reports r, json_each(r.reasons) j WHERE r.day > ?1 AND r.day <= ?2 GROUP BY j.value ORDER BY j.value")
+      .bind(lastDay, throughDay),
+    db.prepare("SELECT COUNT(*) AS n FROM reports WHERE day > ?1 AND day <= ?2").bind(lastDay, throughDay),
     db
       .prepare(`${NEW_PAIRS} SELECT host, param, n FROM frequent ORDER BY flagged_n DESC, newest DESC, n DESC LIMIT ?4`)
       .bind(lastDay, throughDay, PAIR_THRESHOLD, MAX_PAIRS_LISTED + 1),
@@ -114,14 +123,15 @@ async function gather(
     db.prepare("SELECT COALESCE(MAX(n), 0) AS n FROM daily_counter WHERE day >= ?1").bind(throughDay),
     db.prepare("SELECT COALESCE((SELECT n FROM raw_total WHERE id = 1), 0) AS n"),
   ]);
-  const newByKind = Object.fromEntries((kinds.results as { kind: string; n: number }[]).map((r) => [r.kind, r.n]));
-  const total = Object.values(newByKind).reduce((sum, n) => sum + n, 0);
+  const newByReason = Object.fromEntries((reasons.results as { reason: string; n: number }[]).map((r) => [r.reason, r.n]));
+  const total = (newTotal.results[0] as { n: number }).n;
   const listed = pairs.results as { host: string; param: string; n: number }[];
   const oldestDay = (oldest.results[0] as { day: string | null }).day;
   const today = isoDay(now.getTime());
   return {
     label: env.DIGEST_LABEL ?? "",
-    newByKind,
+    newTotal: total,
+    newByReason,
     pairs: listed.slice(0, MAX_PAIRS_LISTED),
     pairsOmitted: listed.length > MAX_PAIRS_LISTED,
     otherReports: total - (covered.results[0] as { n: number }).n,

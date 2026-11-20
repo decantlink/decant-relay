@@ -1,9 +1,10 @@
 {
   "schemaVersion": 1,
   "reportId": "3F2B8C1E-5A47-4D9E-8B06-1C7A2E9D4F10",
-  "kind": "tracker-kept",
+  "reasons": ["tracker-kept"],
   "host": "www.youtube.com",
-  "appMajor": 1,
+  "appVersion": "1.4.2",
+  "appBuild": 42,
   "date": "2026-11-17",
   "rulesGeneration": 17,
   "parameters": [

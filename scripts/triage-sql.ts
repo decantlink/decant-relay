@@ -10,7 +10,7 @@ export function assertReadOnly(sql: string): void {
 }
 
 export interface Statement {
-  name: "kinds" | "groups" | "outcomes" | "generations" | "oldest" | "today" | "stored" | "notes";
+  name: "total" | "reasons" | "groups" | "outcomes" | "generations" | "oldest" | "today" | "stored" | "notes";
   sql: string;
 }
 
@@ -25,7 +25,11 @@ SELECT host, param, COUNT(*) AS n, SUM(flagged) AS flagged, MAX(day) AS latest F
 export function triageStatements(since: string, withNotes: boolean): Statement[] {
   if (!DAY.test(since)) throw new Error("--since must be a day like 2026-11-01");
   const statements: Statement[] = [
-    { name: "kinds", sql: `SELECT kind, COUNT(*) AS n FROM reports WHERE day >= '${since}' GROUP BY kind ORDER BY kind` },
+    { name: "total", sql: `SELECT COUNT(*) AS n FROM reports WHERE day >= '${since}'` },
+    {
+      name: "reasons",
+      sql: `SELECT j.value AS reason, COUNT(*) AS n FROM reports r, json_each(r.reasons) j WHERE r.day >= '${since}' GROUP BY j.value ORDER BY j.value`,
+    },
     { name: "groups", sql: GROUPS(since) },
     {
       name: "outcomes",
@@ -42,7 +46,7 @@ export function triageStatements(since: string, withNotes: boolean): Statement[]
   if (withNotes)
     statements.push({
       name: "notes",
-      sql: `SELECT day, kind, host, note FROM reports WHERE note IS NOT NULL AND day >= '${since}' ORDER BY id DESC LIMIT 50`,
+      sql: `SELECT day, reasons, host, note FROM reports WHERE note IS NOT NULL AND day >= '${since}' ORDER BY id DESC LIMIT 50`,
     });
   for (const s of statements) assertReadOnly(s.sql);
   return statements;

@@ -11,8 +11,8 @@ const param = (name: string, flagged: boolean) => JSON.stringify([{ name, length
 let seq = 0;
 const seed = async (day: string, host: string, name: string, kind = "tracker-kept", note: string | null = NOTE, flagged = false) => {
   const reportId = `00000000-0000-4000-8000-${(++seq).toString(16).padStart(12, "0")}`;
-  await env.DB.prepare("INSERT INTO reports (report_id, day, kind, host, app_major, note, rules_generation, parameters) VALUES (?1,?2,?3,?4,1,?5,17,?6)")
-    .bind(reportId, day, kind, host, note, param(name, flagged))
+  await env.DB.prepare("INSERT INTO reports (report_id, day, reasons, host, app_version, app_build, note, rules_generation, parameters) VALUES (?1,?2,?3,?4,'7.3.1',987,?5,17,?6)")
+    .bind(reportId, day, JSON.stringify(kind.split(",")), host, note, param(name, flagged))
     .run();
   await env.DB.prepare("INSERT INTO raw_total (id, n) VALUES (1, 1) ON CONFLICT (id) DO UPDATE SET n = n + 1").run();
   return reportId;
@@ -30,7 +30,8 @@ const marker = async () => (await env.DB.prepare("SELECT last_day FROM digest_st
 
 const quiet: DigestInput = {
   label: "",
-  newByKind: {},
+  newTotal: 0,
+  newByReason: {},
   pairs: [],
   pairsOmitted: false,
   otherReports: 0,
@@ -84,13 +85,25 @@ describe("buildDigest", () => {
   it("lists pairs and the rest as a count, and strips non-printable characters", () => {
     const digest = buildDigest({
       ...quiet,
-      newByKind: { "link-broke": 1, "tracker-kept": 5 },
+      newTotal: 6,
+      newByReason: { "link-broke": 1, "tracker-kept": 5 },
       pairs: [{ host: "a.example", param: "si\nBcc: x", n: 4 }],
       otherReports: 2,
     });
     expect(digest?.text).toContain("New since the last digest: 6 (link-broke 1, tracker-kept 5)");
+    expect(digest?.text).not.toContain("both reasons");
     expect(digest?.text).toContain("- a.example / si?Bcc: x: 4");
     expect(digest?.text).toContain("2 reports from other sites.");
+  });
+});
+
+describe("two-reason reports", () => {
+  it("counts a report with both reasons once in the total and under each reason, and says so", () => {
+    const digest = buildDigest({ ...quiet, newTotal: 3, newByReason: { "link-broke": 1, "tracker-kept": 3 } });
+    expect(digest?.subject).toBe("Decant reports: 3 new");
+    expect(digest?.text).toContain(
+      "New since the last digest: 3 (link-broke 1, tracker-kept 3; a report with both reasons counts under each)",
+    );
   });
 });
 
@@ -116,6 +129,17 @@ describe("sendDigest", () => {
     expect(text).not.toContain(NOTE);
     for (const id of ids) expect(text).not.toContain(id);
     expect(await marker()).toBe("2026-11-17");
+  });
+
+  it("counts a two-reason report once in the total and under each reason, and never shows the version or build", async () => {
+    await seed("2026-11-17", "a.example", "si", "link-broke,tracker-kept");
+    await seed("2026-11-17", "a.example", "si");
+    const e = configured();
+    await sendDigest(e, WED, false);
+    const { text, subject } = e.sent[0];
+    expect(subject).toBe("Decant reports: 2 new");
+    expect(text).toContain("New since the last digest: 2 (link-broke 1, tracker-kept 2; a report with both reasons counts under each)");
+    expect(text).not.toMatch(/7\.3\.1|987/);
   });
 
   it("lists a pair with flagged reports before a newer pair without, and shows no flag counts", async () => {

@@ -11,18 +11,19 @@ export async function storeReport(db: D1Database, report: Report, day: string, c
   const [insert] = await db.batch([
     db
       .prepare(
-        `INSERT INTO reports (report_id, day, kind, host, app_major, note, rules_generation, parameters)
-         SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8
+        `INSERT INTO reports (report_id, day, reasons, host, app_version, app_build, note, rules_generation, parameters)
+         SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9
          WHERE NOT EXISTS (SELECT 1 FROM reports WHERE report_id = ?1)
-           AND COALESCE((SELECT n FROM daily_counter WHERE day = ?2), 0) < ?9
-           AND COALESCE((SELECT n FROM raw_total WHERE id = 1), 0) < ?10`,
+           AND COALESCE((SELECT n FROM daily_counter WHERE day = ?2), 0) < ?10
+           AND COALESCE((SELECT n FROM raw_total WHERE id = 1), 0) < ?11`,
       )
       .bind(
         report.reportId,
         day,
-        report.kind,
+        JSON.stringify(report.reasons),
         report.host,
-        report.appMajor,
+        report.appVersion,
+        report.appBuild,
         report.note ?? null,
         report.rulesGeneration,
         parameters,

@@ -1,8 +1,9 @@
 {
   "schemaVersion": 1,
-  "kind": "tracker-kept",
+  "reasons": ["tracker-kept"],
   "host": "www.youtube.com",
-  "appMajor": 1,
+  "appVersion": "1.4.2",
+  "appBuild": 42,
   "date": "2026-11-17",
   "rulesGeneration": 17,
   "parameters": [

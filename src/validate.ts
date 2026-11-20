@@ -1,5 +1,5 @@
 export type Charset = "empty" | "digits" | "hex" | "alpha" | "alnum" | "base64url" | "other";
-export type Kind = "tracker-kept" | "link-broke";
+export type Reason = "tracker-kept" | "link-broke";
 
 export type Outcome = "removed-by-rules" | "removed-by-you" | "kept" | "restored-by-you";
 
@@ -13,9 +13,10 @@ export interface Parameter {
 export interface Report {
   schemaVersion: 1;
   reportId: string;
-  kind: Kind;
+  reasons: Reason[];
   host: string;
-  appMajor: number;
+  appVersion: string;
+  appBuild: number;
   date: string;
   rulesGeneration: number;
   parameters: Parameter[];
@@ -25,7 +26,8 @@ export interface Report {
 export type Validation = { ok: true; report: Report } | { ok: false; error: string };
 
 const CHARSETS: readonly string[] = ["empty", "digits", "hex", "alpha", "alnum", "base64url", "other"];
-const KINDS: readonly string[] = ["tracker-kept", "link-broke"];
+const REASONS: readonly string[] = ["tracker-kept", "link-broke"];
+const APP_VERSION = /^[0-9]{1,4}(\.[0-9]{1,4}){1,2}$/;
 const OUTCOMES: readonly string[] = ["removed-by-rules", "removed-by-you", "kept", "restored-by-you"];
 const REPORT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const HOST = /^([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z][a-z0-9-]{0,61}[a-z0-9]$/;
@@ -81,16 +83,25 @@ function validateParameters(value: unknown, field: string): Parameter[] | string
 /** Checks a parsed JSON value against schema/report.schema.json; errors name a field, never a value. */
 export function validateReport(input: unknown): Validation {
   if (!isObject(input)) return fail("payload: not an object");
-  if (!hasOnly(input, ["schemaVersion", "reportId", "kind", "host", "appMajor", "date", "rulesGeneration", "parameters", "note"])) {
+  if (!hasOnly(input, ["schemaVersion", "reportId", "reasons", "host", "appVersion", "appBuild", "date", "rulesGeneration", "parameters", "note"])) {
     return fail("payload: unknown field");
   }
   if (input.schemaVersion !== 1) return fail("schemaVersion: must be 1");
-  const { reportId, kind, host, appMajor, date, note } = input;
+  const { reportId, reasons, host, appVersion, appBuild, date, note } = input;
   if (typeof reportId !== "string" || !REPORT_ID.test(reportId)) return fail("reportId: invalid");
-  if (typeof kind !== "string" || !KINDS.includes(kind)) return fail("kind: invalid");
+  if (
+    !Array.isArray(reasons) ||
+    reasons.length < 1 ||
+    reasons.length > 2 ||
+    !reasons.every((r) => typeof r === "string" && REASONS.includes(r)) ||
+    new Set(reasons).size !== reasons.length
+  ) {
+    return fail("reasons: invalid");
+  }
   if (typeof host !== "string" || host.length > 253 || !HOST.test(host)) return fail("host: invalid");
-  if (typeof appMajor !== "number" || !Number.isInteger(appMajor) || appMajor < 1 || appMajor > 999) {
-    return fail("appMajor: invalid");
+  if (typeof appVersion !== "string" || appVersion.length > 14 || !APP_VERSION.test(appVersion)) return fail("appVersion: invalid");
+  if (typeof appBuild !== "number" || !Number.isInteger(appBuild) || appBuild < 1 || appBuild > 999_999) {
+    return fail("appBuild: invalid");
   }
   if (typeof date !== "string" || !isCalendarDate(date)) return fail("date: invalid");
   const { rulesGeneration } = input;
@@ -114,9 +125,10 @@ export function validateReport(input: unknown): Validation {
     report: {
       schemaVersion: 1,
       reportId,
-      kind: kind as Kind,
+      reasons: [...(reasons as Reason[])].sort(),
       host,
-      appMajor,
+      appVersion,
+      appBuild,
       date,
       rulesGeneration,
       parameters,

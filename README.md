@@ -11,7 +11,7 @@ the whole server, public so you can check what it accepts and stores.
 Only what [`schema/report.schema.json`](schema/report.schema.json) allows, nothing else (any extra
 field is rejected):
 
-- the reasons for the report: `tracker-kept`, `link-broke` or both
+- the reasons for the report: `tracker-kept`, `link-broke`, `other` (something else, explained only by the note), or several of them
 - the host (for example `www.youtube.com`), never a path or full link
 - every parameter of the link (at most 32): its name, the **shape** of its value (length and character
   class such as `digits` or `base64url`, never the value), what happened to it (`removed-by-rules`,
@@ -65,7 +65,7 @@ from resetting it). Any value except unset, empty or `0` pauses the relay.
 After the nightly retention run, the Worker emails the maintainer a plain-text digest through
 Cloudflare Email. It is sent only when there are new reports or a warning, plus a short check every Monday
 (UTC) so a silent relay is noticeable. It covers whole UTC days since the last digest and contains:
-- new reports, and how many for each reason (a report with both reasons counts under each)
+- new reports, and how many for each reason (a report with several reasons counts under each)
 - site and parameter pairs with 3 or more reports, pairs with flagged reports first, then newest, and
   "N reports from other sites" for the rest (it shows no flag counts)
 - the age of the oldest stored report (a warning above 181 days means retention failed), how close the
@@ -96,7 +96,7 @@ age of the oldest report, today's accepted count against `DAILY_CAP`, the stored
 The same questions as saved queries for the Cloudflare D1 console (dashboard, D1, the database, Console).
 Replace the date `2026-11-01` with the day to look back to:
 
-**New reports, and by reason** (a report with both reasons counts under each)
+**New reports, and by reason** (a report with several reasons counts under each)
 
 ```sql
 SELECT COUNT(*) AS n FROM reports WHERE day >= '2026-11-01';

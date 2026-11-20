@@ -142,11 +142,11 @@ describe("rejects", () => {
 });
 
 describe("storage", () => {
-  it("stores both reasons sorted as a JSON array, with the full version and build", async () => {
-    const response = await post(report({ reasons: ["tracker-kept", "link-broke"], appVersion: "1.4.2", appBuild: 42 }));
+  it("stores several reasons sorted as a JSON array, with the full version and build", async () => {
+    const response = await post(report({ reasons: ["tracker-kept", "other", "link-broke"], appVersion: "1.4.2", appBuild: 42 }));
     expect(response.status).toBe(201);
     const [row] = (await rows("reports")) as { reasons: string; app_version: string; app_build: number }[];
-    expect(row.reasons).toBe('["link-broke","tracker-kept"]');
+    expect(row.reasons).toBe('["link-broke","other","tracker-kept"]');
     expect([row.app_version, row.app_build]).toEqual(["1.4.2", 42]);
   });
 
@@ -297,7 +297,7 @@ describe("retention", () => {
     expect(counts).toHaveLength(3);
   });
 
-  it("counts a report with both reasons under each reason", async () => {
+  it("counts a report with several reasons under each reason", async () => {
     await env.DB.batch([insert("2026-01-01", "example.com", [], ["si"], "link-broke,tracker-kept")]);
     await runRetention(env.DB, NOW);
     const counts = (await rows("counts")) as { reason: string; n: number }[];

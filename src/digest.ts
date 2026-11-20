@@ -23,7 +23,7 @@ export interface DigestEnv {
 export interface DigestInput {
   label: string;
   newTotal: number;
-  /** A report with both reasons is counted under each. */
+  /** A report with several reasons is counted under each. */
   newByReason: Record<string, number>;
   pairs: { host: string; param: string; n: number }[];
   pairsOmitted: boolean;
@@ -60,7 +60,7 @@ export function buildDigest(input: DigestInput): { subject: string; text: string
     .join(", ");
   const overlap = Object.values(input.newByReason).reduce((sum, n) => sum + n, 0) > total;
   const lines = [
-    `New since the last digest: ${total}${reasons ? ` (${reasons}${overlap ? "; a report with both reasons counts under each" : ""})` : ""}`,
+    `New since the last digest: ${total}${reasons ? ` (${reasons}${overlap ? "; a report with several reasons counts under each" : ""})` : ""}`,
     "",
   ];
   if (input.pairs.length > 0) {

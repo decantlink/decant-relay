@@ -1,5 +1,5 @@
 export type Charset = "empty" | "digits" | "hex" | "alpha" | "alnum" | "base64url" | "other";
-export type Reason = "tracker-kept" | "link-broke";
+export type Reason = "tracker-kept" | "link-broke" | "other";
 
 export type Outcome = "removed-by-rules" | "removed-by-you" | "kept" | "restored-by-you";
 
@@ -26,7 +26,7 @@ export interface Report {
 export type Validation = { ok: true; report: Report } | { ok: false; error: string };
 
 const CHARSETS: readonly string[] = ["empty", "digits", "hex", "alpha", "alnum", "base64url", "other"];
-const REASONS: readonly string[] = ["tracker-kept", "link-broke"];
+const REASONS: readonly string[] = ["tracker-kept", "link-broke", "other"];
 const APP_VERSION = /^[0-9]{1,4}(\.[0-9]{1,4}){1,2}$/;
 const OUTCOMES: readonly string[] = ["removed-by-rules", "removed-by-you", "kept", "restored-by-you"];
 const REPORT_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
@@ -92,7 +92,7 @@ export function validateReport(input: unknown): Validation {
   if (
     !Array.isArray(reasons) ||
     reasons.length < 1 ||
-    reasons.length > 2 ||
+    reasons.length > 3 ||
     !reasons.every((r) => typeof r === "string" && REASONS.includes(r)) ||
     new Set(reasons).size !== reasons.length
   ) {

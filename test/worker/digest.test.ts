@@ -91,18 +91,18 @@ describe("buildDigest", () => {
       otherReports: 2,
     });
     expect(digest?.text).toContain("New since the last digest: 6 (link-broke 1, tracker-kept 5)");
-    expect(digest?.text).not.toContain("both reasons");
+    expect(digest?.text).not.toContain("several reasons");
     expect(digest?.text).toContain("- a.example / si?Bcc: x: 4");
     expect(digest?.text).toContain("2 reports from other sites.");
   });
 });
 
 describe("two-reason reports", () => {
-  it("counts a report with both reasons once in the total and under each reason, and says so", () => {
+  it("counts a report with several reasons once in the total and under each reason, and says so", () => {
     const digest = buildDigest({ ...quiet, newTotal: 3, newByReason: { "link-broke": 1, "tracker-kept": 3 } });
     expect(digest?.subject).toBe("Decant reports: 3 new");
     expect(digest?.text).toContain(
-      "New since the last digest: 3 (link-broke 1, tracker-kept 3; a report with both reasons counts under each)",
+      "New since the last digest: 3 (link-broke 1, tracker-kept 3; a report with several reasons counts under each)",
     );
   });
 });
@@ -138,7 +138,7 @@ describe("sendDigest", () => {
     await sendDigest(e, WED, false);
     const { text, subject } = e.sent[0];
     expect(subject).toBe("Decant reports: 2 new");
-    expect(text).toContain("New since the last digest: 2 (link-broke 1, tracker-kept 2; a report with both reasons counts under each)");
+    expect(text).toContain("New since the last digest: 2 (link-broke 1, tracker-kept 2; a report with several reasons counts under each)");
     expect(text).not.toMatch(/7\.3\.1|987/);
   });
 

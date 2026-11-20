@@ -50,7 +50,7 @@ const out: string[] = [`Decant relay triage: ${envName}, since ${since}`, ""];
 const reasons = rows.reasons.map((r) => `${printable(String(r.reason))} ${r.n}`);
 const total = Number(rows.total[0].n);
 const overlap = rows.reasons.reduce((sum, r) => sum + Number(r.n), 0) > total;
-out.push(`New reports since ${since}: ${total}${reasons.length ? ` (${reasons.join(", ")}${overlap ? "; a report with both reasons counts under each" : ""})` : ""}`, "", "Site and parameter groups, flagged first, then newest:");
+out.push(`New reports since ${since}: ${total}${reasons.length ? ` (${reasons.join(", ")}${overlap ? "; a report with several reasons counts under each" : ""})` : ""}`, "", "Site and parameter groups, flagged first, then newest:");
 if (rows.groups.length === 0) out.push("  none");
 for (const g of rows.groups) out.push(`  ${printable(String(g.host))} / ${printable(String(g.param))}: ${g.n}, flagged ${g.flagged} (latest ${g.latest})`);
 out.push("", "Parameter outcomes (flagged by the person):");

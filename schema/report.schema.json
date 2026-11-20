@@ -13,12 +13,12 @@
       "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
     },
     "reasons": {
-      "description": "Why the person reports the link: tracker-kept (a tracking parameter was not removed), link-broke (the cleaned link stopped working), or both. One or two unique values.",
+      "description": "Why the person reports the link: tracker-kept (a tracking parameter was not removed), link-broke (the cleaned link stopped working), other (something else, described only by the optional note). One to three unique values.",
       "type": "array",
       "minItems": 1,
-      "maxItems": 2,
+      "maxItems": 3,
       "uniqueItems": true,
-      "items": { "enum": ["tracker-kept", "link-broke"] }
+      "items": { "enum": ["tracker-kept", "link-broke", "other"] }
     },
     "host": {
       "description": "Lowercase host name of the link. No scheme, port, path, user info or IP address (the last label must start with a letter).",

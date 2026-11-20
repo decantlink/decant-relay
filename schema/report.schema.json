@@ -1,10 +1,10 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Decant report, schemaVersion 1",
-  "description": "A shape-only report about one cleaned link. It carries no link, no parameter values and no path. The relay rejects anything that does not match, extra fields included. A later schemaVersion may add fields; v1 never will.",
+  "description": "A shape-only report about one cleaned link. It carries no link, no parameter values and no path. The relay rejects anything that does not match, extra fields included.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "reportId", "kind", "host", "appMajor", "date", "removed", "kept"],
+  "required": ["schemaVersion", "reportId", "kind", "host", "appMajor", "date", "rulesGeneration", "parameters"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "reportId": {
@@ -34,14 +34,14 @@
       "format": "date",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
     },
-    "removed": {
-      "description": "Parameters the app removed from the link.",
-      "type": "array",
-      "maxItems": 32,
-      "items": { "$ref": "#/$defs/parameter" }
+    "rulesGeneration": {
+      "description": "Generation number of the rule set the app used, so a report is read against the right rules. Monotonic counter from decant-rules, starting at 1.",
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000000
     },
-    "kept": {
-      "description": "Parameters the app kept in the link.",
+    "parameters": {
+      "description": "Every parameter of the link the report is about, at most 32. Each says what happened to it and whether the person flagged it.",
       "type": "array",
       "maxItems": 32,
       "items": { "$ref": "#/$defs/parameter" }
@@ -58,7 +58,7 @@
     "parameter": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name", "shape"],
+      "required": ["name", "shape", "outcome", "flagged"],
       "properties": {
         "name": {
           "description": "Parameter name. Limited character set: no '=', '/', '@', '%' or spaces, so a value or path cannot be written into it.",
@@ -67,7 +67,15 @@
           "maxLength": 64,
           "pattern": "^[A-Za-z0-9_.:\\[\\]-]+$"
         },
-        "shape": { "$ref": "#/$defs/shape" }
+        "shape": { "$ref": "#/$defs/shape" },
+        "outcome": {
+          "description": "removed-by-rules: the rules removed it. removed-by-you: it was kept by the rules and the person removed it. kept: it stayed in the link. restored-by-you: the rules removed it and the person put it back. The link ends without the removed-* parameters and with the others.",
+          "enum": ["removed-by-rules", "removed-by-you", "kept", "restored-by-you"]
+        },
+        "flagged": {
+          "description": "true when the person ticked this parameter in the report as the one they mean.",
+          "type": "boolean"
+        }
       }
     },
     "shape": {

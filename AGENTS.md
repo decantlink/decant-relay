@@ -26,7 +26,8 @@ them without the sender's IP address. It also owns the report schema and fixture
 
 ## Conventions
 
-- A schema change edits `report.schema.json`, `src/validate.ts` and the fixtures together; the
+- A schema change edits `report.schema.json`, `src/validate.ts`, the fixtures and, if the stored shape
+  changes, a new migration together; the
   tests run every fixture through both the schema (Ajv) and the validator and they must agree.
 - Never read, store or log IP or header data. No `console.*` in `src/` (a test enforces it).
 - `wrangler.json` keeps `observability.enabled=false`, `logpush=false`, no `tail_consumers`,
@@ -35,7 +36,8 @@ them without the sender's IP address. It also owns the report schema and fixture
   digest addresses (`DIGEST_TO`, `DIGEST_FROM`) are dashboard variables, not in `wrangler.json`.
 - Notes are users' free text. Only the maintainer runs `npm run triage -- --notes`, personally;
   agents never run it and never read production notes. Test with fixtures and seeded staging rows.
-- The digest never contains notes, report IDs or parameter values; its input type has no field for them.
+- The digest never contains notes, report IDs, parameter values, flag counts or rules generations; its
+  input type has no field for them. Flagged parameters only decide the order of its pairs.
 - Apply a new migration before deploying code that uses it; the digest otherwise fails its cron run.
 
 ## Contracts

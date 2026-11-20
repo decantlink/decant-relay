@@ -5,246 +5,304 @@
   "host": "www.youtube.com",
   "appMajor": 1,
   "date": "2026-11-17",
-  "removed": [
+  "rulesGeneration": 17,
+  "parameters": [
     {
       "name": "r0",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r1",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r2",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r3",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r4",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r5",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r6",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r7",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r8",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r9",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r10",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r11",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r12",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r13",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r14",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r15",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r16",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r17",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r18",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r19",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r20",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r21",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r22",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r23",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r24",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r25",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r26",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r27",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r28",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r29",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r30",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r31",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r32",
       "shape": {
         "length": 1,
         "charset": "digits"
-      }
-    }
-  ],
-  "kept": [
-    {
-      "name": "si",
-      "shape": {
-        "length": 16,
-        "charset": "base64url"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     }
   ]
 }

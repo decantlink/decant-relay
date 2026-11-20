@@ -58,7 +58,7 @@ export function buildDigest(input: DigestInput): { subject: string; text: string
     .join(", ");
   const lines = [`New since the last digest: ${total}${kinds ? ` (${kinds})` : ""}`, ""];
   if (input.pairs.length > 0) {
-    lines.push(`Site and parameter pairs with ${PAIR_THRESHOLD} or more reports, newest first:`);
+    lines.push(`Site and parameter pairs with ${PAIR_THRESHOLD} or more reports, flagged first, then newest:`);
     for (const p of input.pairs) lines.push(`- ${plain(p.host)} / ${plain(p.param)}: ${p.n}`);
     if (input.pairsOmitted) lines.push("- more pairs omitted; see the D1 console");
   }
@@ -86,13 +86,12 @@ const isPaused = (value: string | undefined) => value !== undefined && value.tri
 const isoDay = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 
 const NEW_PAIRS = `
-  WITH fresh AS (SELECT id, host, removed, kept FROM reports WHERE day > ?1 AND day <= ?2),
-  pairs AS (
-    SELECT fresh.id AS id, fresh.host AS host, json_extract(j.value, '$.name') AS param FROM fresh, json_each(fresh.removed) j
-    UNION
-    SELECT fresh.id, fresh.host, json_extract(j.value, '$.name') FROM fresh, json_each(fresh.kept) j
+  WITH pairs AS (
+    SELECT r.id AS id, r.host AS host, json_extract(j.value, '$.name') AS param, MAX(json_extract(j.value, '$.flagged')) AS flagged
+    FROM reports r, json_each(r.parameters) j WHERE r.day > ?1 AND r.day <= ?2
+    GROUP BY r.id, r.host, json_extract(j.value, '$.name')
   ),
-  frequent AS (SELECT host, param, COUNT(*) AS n, MAX(id) AS newest FROM pairs GROUP BY host, param HAVING COUNT(*) >= ?3)`;
+  frequent AS (SELECT host, param, COUNT(*) AS n, MAX(id) AS newest, SUM(flagged) AS flagged_n FROM pairs GROUP BY host, param HAVING COUNT(*) >= ?3)`;
 
 /** Collects the digest figures from D1 for reports received on days after `lastDay`, through `throughDay`. */
 async function gather(
@@ -106,7 +105,7 @@ async function gather(
   const [kinds, pairs, covered, oldest, counter, raw] = await db.batch([
     db.prepare("SELECT kind, COUNT(*) AS n FROM reports WHERE day > ?1 AND day <= ?2 GROUP BY kind ORDER BY kind").bind(lastDay, throughDay),
     db
-      .prepare(`${NEW_PAIRS} SELECT host, param, n FROM frequent ORDER BY newest DESC, n DESC LIMIT ?4`)
+      .prepare(`${NEW_PAIRS} SELECT host, param, n FROM frequent ORDER BY flagged_n DESC, newest DESC, n DESC LIMIT ?4`)
       .bind(lastDay, throughDay, PAIR_THRESHOLD, MAX_PAIRS_LISTED + 1),
     db
       .prepare(`${NEW_PAIRS} SELECT COUNT(DISTINCT pairs.id) AS n FROM pairs JOIN frequent USING (host, param)`)

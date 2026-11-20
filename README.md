@@ -13,19 +13,24 @@ field is rejected):
 
 - the report kind: `tracker-kept` or `link-broke`
 - the host (for example `www.youtube.com`), never a path or full link
-- the names of the parameters the app removed and kept, and for each one the **shape** of its value
-  (length and character class such as `digits` or `base64url`), never the value
+- every parameter of the link (at most 32): its name, the **shape** of its value (length and character
+  class such as `digits` or `base64url`, never the value), what happened to it (`removed-by-rules`,
+  `removed-by-you`, `kept` or `restored-by-you`) and whether the person flagged it (ticked it in the
+  report as the one they mean)
+- the generation number of the rule set the app used, so a report is read against the right rules
 - the app's major version and the day
 - a random report ID, so a retried send is stored once
 - an optional note of up to 280 characters, sent exactly as the user typed it
 
+`schemaVersion` is 1. The parameter list above replaced the first draft's separate removed and kept lists
+on 20 Nov 2026, before any released app sent a report.
 ## What is stored
 
 One row per report: report ID, the day the relay received it (a date, no time), kind, host, app
-major version, note, and the parameter names and shapes. Nothing from the connection or the request
+major version, note, rules generation, and the parameters (name, shape, outcome, flagged). Nothing from the connection or the request
 headers is read or stored; see [`src/index.ts`](src/index.ts) and [`src/store.ts`](src/store.ts).
 Reports are summarised in a daily digest (see below). Raw reports are deleted after 180 days ([`src/retention.ts`](src/retention.ts)); counts per host,
-parameter and kind are kept, without report IDs or notes.
+parameter, kind and outcome (with how many were flagged) are kept, without report IDs or notes.
 
 ## What this does not prove
 
@@ -60,7 +65,8 @@ After the nightly retention run, the Worker emails the maintainer a plain-text d
 Cloudflare Email. It is sent only when there are new reports or a warning, plus a short check every Monday
 (UTC) so a silent relay is noticeable. It covers whole UTC days since the last digest and contains:
 - new reports by kind
-- site and parameter pairs with 3 or more reports, and "N reports from other sites" for the rest
+- site and parameter pairs with 3 or more reports, pairs with flagged reports first, then newest, and
+  "N reports from other sites" for the rest (it shows no flag counts)
 - the age of the oldest stored report (a warning above 181 days means retention failed), how close the
   day's accepted count is to `DAILY_CAP` and the stored count to `MAX_RAW_REPORTS` (warnings at 80%), and
   whether the relay is paused
@@ -95,18 +101,23 @@ Replace the date `2026-11-01` with the day to look back to:
 SELECT kind, COUNT(*) AS n FROM reports WHERE day >= '2026-11-01' GROUP BY kind ORDER BY kind;
 ```
 
-**Site and parameter groups, newest first**
-
+**Site and parameter groups, flagged first, then newest**
 ```sql
-WITH fresh AS (SELECT id, day, host, removed, kept FROM reports WHERE day >= '2026-11-01'),
-pairs AS (
-  SELECT fresh.id AS id, fresh.day AS day, fresh.host AS host, json_extract(j.value, '$.name') AS param FROM fresh, json_each(fresh.removed) j
-  UNION
-  SELECT fresh.id, fresh.day, fresh.host, json_extract(j.value, '$.name') FROM fresh, json_each(fresh.kept) j
+WITH pairs AS (
+  SELECT r.id AS id, r.day AS day, r.host AS host, json_extract(j.value, '$.name') AS param, MAX(json_extract(j.value, '$.flagged')) AS flagged
+  FROM reports r, json_each(r.parameters) j WHERE r.day >= '2026-11-01'
+  GROUP BY r.id, r.day, r.host, json_extract(j.value, '$.name')
 )
-SELECT host, param, COUNT(*) AS n, MAX(day) AS latest FROM pairs GROUP BY host, param ORDER BY MAX(id) DESC LIMIT 50;
+SELECT host, param, COUNT(*) AS n, SUM(flagged) AS flagged, MAX(day) AS latest FROM pairs GROUP BY host, param ORDER BY SUM(flagged) DESC, MAX(id) DESC LIMIT 50;
 ```
-
+**Parameter outcomes, and how many the person flagged**
+```sql
+SELECT json_extract(j.value, '$.outcome') AS outcome, COUNT(*) AS n, SUM(json_extract(j.value, '$.flagged')) AS flagged FROM reports r, json_each(r.parameters) j WHERE r.day >= '2026-11-01' GROUP BY outcome ORDER BY outcome;
+```
+**Reports by rules generation**
+```sql
+SELECT rules_generation, COUNT(*) AS n FROM reports WHERE day >= '2026-11-01' GROUP BY rules_generation ORDER BY rules_generation DESC;
+```
 **Age of the oldest raw report (retention failed if over 181 days)**
 
 ```sql

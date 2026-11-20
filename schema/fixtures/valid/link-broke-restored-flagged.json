@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "reportId": "3f2b8c1e-5a47-4d9e-8b06-1c7a2e9d4f22",
+  "kind": "link-broke",
+  "host": "www.youtube.com",
+  "appMajor": 1,
+  "date": "2026-11-17",
+  "rulesGeneration": 17,
+  "parameters": [
+    {
+      "name": "ref",
+      "shape": {
+        "length": 9,
+        "charset": "alnum"
+      },
+      "outcome": "restored-by-you",
+      "flagged": true
+    },
+    {
+      "name": "utm_source",
+      "shape": {
+        "length": 7,
+        "charset": "alpha"
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
+    }
+  ],
+  "note": "The page said not found after cleaning."
+}

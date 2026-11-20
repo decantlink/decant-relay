@@ -49,9 +49,15 @@ for (const s of statements) rows[s.name] = await query(s.sql);
 const out: string[] = [`Decant relay triage: ${envName}, since ${since}`, ""];
 const kinds = rows.kinds.map((r) => `${printable(String(r.kind))} ${r.n}`);
 const total = rows.kinds.reduce((sum, r) => sum + Number(r.n), 0);
-out.push(`New reports since ${since}: ${total}${kinds.length ? ` (${kinds.join(", ")})` : ""}`, "", "Site and parameter groups, newest first:");
+out.push(`New reports since ${since}: ${total}${kinds.length ? ` (${kinds.join(", ")})` : ""}`, "", "Site and parameter groups, flagged first, then newest:");
 if (rows.groups.length === 0) out.push("  none");
-for (const g of rows.groups) out.push(`  ${printable(String(g.host))} / ${printable(String(g.param))}: ${g.n} (latest ${g.latest})`);
+for (const g of rows.groups) out.push(`  ${printable(String(g.host))} / ${printable(String(g.param))}: ${g.n}, flagged ${g.flagged} (latest ${g.latest})`);
+out.push("", "Parameter outcomes (flagged by the person):");
+if (rows.outcomes.length === 0) out.push("  none");
+for (const o of rows.outcomes) out.push(`  ${printable(String(o.outcome))}: ${o.n} (flagged ${o.flagged})`);
+out.push("", "Reports by rules generation:");
+if (rows.generations.length === 0) out.push("  none");
+for (const g of rows.generations) out.push(`  ${g.rules_generation === null ? "unknown (stored before generations)" : g.rules_generation}: ${g.n}`);
 const oldest = rows.oldest[0]?.oldest as string | null | undefined;
 const age = oldest ? Math.floor((Date.now() - Date.parse(oldest)) / 86_400_000) : null;
 out.push(

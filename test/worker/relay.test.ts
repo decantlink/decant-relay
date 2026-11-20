@@ -36,6 +36,43 @@ describe("accepts", () => {
   }
 });
 
+describe("stores", () => {
+  it("each parameter with its outcome and flag, and the rules generation, as sent", async () => {
+    const body = report({
+      rulesGeneration: 42,
+      parameters: [
+        { name: "fbclid", shape: { length: 40, charset: "base64url" }, outcome: "removed-by-you", flagged: true },
+        { name: "si", shape: { length: 22, charset: "base64url" }, outcome: "kept", flagged: false },
+      ],
+    });
+    expect((await post(body)).status).toBe(201);
+    const [row] = (await rows("reports")) as { rules_generation: number; parameters: string }[];
+    expect(row.rules_generation).toBe(42);
+    expect(JSON.parse(row.parameters)).toEqual([
+      { name: "fbclid", length: 40, charset: "base64url", outcome: "removed-by-you", flagged: true },
+      { name: "si", length: 22, charset: "base64url", outcome: "kept", flagged: false },
+    ]);
+  });
+  it("migrates rows stored before outcomes existed: removed by the rules, kept, not flagged", async () => {
+    const migration = env.TEST_MIGRATIONS.find((m) => m.name.startsWith("0004"))!;
+    const update = migration.queries.find((q) => q.includes("UPDATE reports SET parameters"))!;
+    await env.DB.exec("CREATE TABLE old_reports (removed TEXT, kept TEXT, parameters TEXT NOT NULL DEFAULT '[]')");
+    await env.DB.prepare("INSERT INTO old_reports (removed, kept) VALUES (?, ?), ('[]', '[]')")
+      .bind('[{"name":"utm_source","length":7,"charset":"alpha"}]', '[{"name":"si","length":16,"charset":"base64url"}]')
+      .run();
+    await env.DB.prepare(update.replaceAll("reports", "old_reports")).run();
+    const stored = (await env.DB.prepare("SELECT parameters FROM old_reports").all()).results as { parameters: string }[];
+    await env.DB.exec("DROP TABLE old_reports");
+    expect(stored.map((r) => JSON.parse(r.parameters))).toEqual([
+      [
+        { name: "utm_source", length: 7, charset: "alpha", outcome: "removed-by-rules", flagged: false },
+        { name: "si", length: 16, charset: "base64url", outcome: "kept", flagged: false },
+      ],
+      [],
+    ]);
+  });
+});
+
 describe("rejects", () => {
   for (const [name, body] of Object.entries(invalid)) {
     it(`invalid fixture ${name}`, async () => {
@@ -47,7 +84,7 @@ describe("rejects", () => {
   }
 
   it("a value present in a parameter", async () => {
-    const response = await post(report({ kept: [{ name: "si", value: "abc", shape: { length: 3, charset: "alpha" } }] }));
+    const response = await post(report({ parameters: [{ name: "si", value: "abc", shape: { length: 3, charset: "alpha" }, outcome: "kept", flagged: false }] }));
     expect(response.status).toBe(400);
   });
 
@@ -119,7 +156,7 @@ describe("storage", () => {
     const stored = await rows("reports");
     expect(stored).toHaveLength(1);
     expect(Object.keys(stored[0]).sort()).toEqual(
-      ["app_major", "day", "host", "id", "kept", "kind", "note", "removed", "report_id"].sort(),
+      ["app_major", "day", "host", "id", "kind", "note", "parameters", "report_id", "rules_generation"].sort(),
     );
     const dump = JSON.stringify([stored, await rows("daily_counter"), await rows("counts")]);
     for (const leak of ["203.0.113.77", "DecantTest", "pt-PT", "secret-token"]) expect(dump).not.toContain(leak);
@@ -218,17 +255,16 @@ describe("failure", () => {
 
 describe("retention", () => {
   const NOW = new Date("2026-11-17T12:00:00Z");
-  const insert = (day: string, host: string, removed: string[], kept: string[], kind = "tracker-kept") =>
+  type Stored = { name: string; outcome: string; flagged: boolean };
+  const insertParameters = (day: string, host: string, parameters: Stored[], kind = "tracker-kept") =>
     env.DB.prepare(
-      "INSERT INTO reports (report_id, day, kind, host, app_major, note, removed, kept) VALUES (?, ?, ?, ?, 1, 'private note', ?, ?)",
-    ).bind(
-      freshId(),
-      day,
-      kind,
-      host,
-      JSON.stringify(removed.map((name) => ({ name, length: 3, charset: "alpha" }))),
-      JSON.stringify(kept.map((name) => ({ name, length: 3, charset: "alpha" }))),
-    );
+      "INSERT INTO reports (report_id, day, kind, host, app_major, note, rules_generation, parameters) VALUES (?, ?, ?, ?, 1, 'private note', 17, ?)",
+    ).bind(freshId(), day, kind, host, JSON.stringify(parameters.map((p) => ({ ...p, length: 3, charset: "alpha" }))));
+  const insert = (day: string, host: string, removed: string[], kept: string[], kind = "tracker-kept") =>
+    insertParameters(day, host, [
+      ...removed.map((name) => ({ name, outcome: "removed-by-rules", flagged: false })),
+      ...kept.map((name) => ({ name, outcome: "kept", flagged: false })),
+    ], kind);
 
   it("deletes raw reports older than 180 days and keeps counts per host, parameter and kind", async () => {
     await env.DB.batch([
@@ -247,19 +283,31 @@ describe("retention", () => {
     const counts = (await rows("counts")) as { host: string; param: string; kind: string; outcome: string; n: number }[];
     const pick = (host: string, param: string, kind: string, outcome: string) =>
       counts.find((c) => c.host === host && c.param === param && c.kind === kind && c.outcome === outcome)?.n;
-    expect(pick("www.youtube.com", "utm_source", "tracker-kept", "removed")).toBe(2);
+    expect(pick("www.youtube.com", "utm_source", "tracker-kept", "removed-by-rules")).toBe(2);
     expect(pick("www.youtube.com", "si", "tracker-kept", "kept")).toBe(2);
     expect(pick("www.youtube.com", "si", "link-broke", "kept")).toBe(1);
     expect(counts).toHaveLength(3);
   });
 
+  it("counts each outcome separately, with how many of them the person flagged", async () => {
+    await env.DB.batch([
+      insertParameters("2026-01-01", "example.com", [{ name: "ref", outcome: "removed-by-you", flagged: true }]),
+      insertParameters("2026-01-02", "example.com", [{ name: "ref", outcome: "removed-by-you", flagged: false }]),
+      insertParameters("2026-01-03", "example.com", [{ name: "ref", outcome: "restored-by-you", flagged: true }]),
+      insertParameters("2026-01-04", "example.com", [{ name: "ref", outcome: "kept", flagged: false }]),
+    ]);
+    await runRetention(env.DB, NOW);
+    const counts = (await rows("counts")) as { outcome: string; n: number; flagged_n: number }[];
+    const by = Object.fromEntries(counts.map((c) => [c.outcome, [c.n, c.flagged_n]]));
+    expect(by).toEqual({ "removed-by-you": [2, 1], "restored-by-you": [1, 1], kept: [1, 0] });
+  });
   it("keeps no report ID or note in the counts and does not double count on a second run", async () => {
     await env.DB.batch([insert("2026-01-01", "example.com", ["utm_source"], [])]);
     await runRetention(env.DB, NOW);
     await runRetention(env.DB, NOW);
     expect(await rows("reports")).toHaveLength(0);
     const counts = await rows("counts");
-    expect(counts).toEqual([{ host: "example.com", param: "utm_source", kind: "tracker-kept", outcome: "removed", n: 1 }]);
+    expect(counts).toEqual([{ host: "example.com", param: "utm_source", kind: "tracker-kept", outcome: "removed-by-rules", n: 1, flagged_n: 0 }]);
     expect(JSON.stringify(counts)).not.toContain("private note");
   });
 

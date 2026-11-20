@@ -5,456 +5,295 @@
   "host": "www.youtube.com",
   "appMajor": 1,
   "date": "2026-11-17",
-  "removed": [
+  "rulesGeneration": 17,
+  "parameters": [
     {
       "name": "r0xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": true
     },
     {
       "name": "r1xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-you",
+      "flagged": false
     },
     {
       "name": "r2xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "kept",
+      "flagged": false
     },
     {
       "name": "r3xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "restored-by-you",
+      "flagged": true
     },
     {
       "name": "r4xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r5xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-you",
+      "flagged": false
     },
     {
       "name": "r6xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "kept",
+      "flagged": true
     },
     {
       "name": "r7xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "restored-by-you",
+      "flagged": false
     },
     {
       "name": "r8xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r9xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-you",
+      "flagged": true
     },
     {
       "name": "r10xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "kept",
+      "flagged": false
     },
     {
       "name": "r11xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "restored-by-you",
+      "flagged": false
     },
     {
       "name": "r12xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": true
     },
     {
       "name": "r13xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-you",
+      "flagged": false
     },
     {
       "name": "r14xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "kept",
+      "flagged": false
     },
     {
       "name": "r15xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "restored-by-you",
+      "flagged": true
     },
     {
       "name": "r16xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r17xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-you",
+      "flagged": false
     },
     {
       "name": "r18xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "kept",
+      "flagged": true
     },
     {
       "name": "r19xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "restored-by-you",
+      "flagged": false
     },
     {
       "name": "r20xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r21xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-you",
+      "flagged": true
     },
     {
       "name": "r22xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "kept",
+      "flagged": false
     },
     {
       "name": "r23xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "restored-by-you",
+      "flagged": false
     },
     {
       "name": "r24xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": true
     },
     {
       "name": "r25xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-you",
+      "flagged": false
     },
     {
       "name": "r26xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "kept",
+      "flagged": false
     },
     {
       "name": "r27xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "restored-by-you",
+      "flagged": true
     },
     {
       "name": "r28xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "r29xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "removed-by-you",
+      "flagged": false
     },
     {
       "name": "r30xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
+      },
+      "outcome": "kept",
+      "flagged": true
     },
     {
       "name": "r31xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
       "shape": {
         "length": 4096,
         "charset": "other"
-      }
-    }
-  ],
-  "kept": [
-    {
-      "name": "k0",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k1",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k2",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k3",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k4",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k5",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k6",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k7",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k8",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k9",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k10",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k11",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k12",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k13",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k14",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k15",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k16",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k17",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k18",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k19",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k20",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k21",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k22",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k23",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k24",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k25",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k26",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k27",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k28",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k29",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k30",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
-    },
-    {
-      "name": "k31",
-      "shape": {
-        "length": 1,
-        "charset": "digits"
-      }
+      },
+      "outcome": "restored-by-you",
+      "flagged": false
     }
   ],
   "note": "😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀😀"

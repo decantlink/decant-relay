@@ -5,29 +5,34 @@
   "host": "www.youtube.com",
   "appMajor": 1,
   "date": "2026-11-17",
-  "removed": [
+  "rulesGeneration": 17,
+  "parameters": [
     {
       "name": "utm_source",
       "shape": {
         "length": 7,
         "charset": "alpha"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     },
     {
       "name": "fbclid",
       "shape": {
         "length": 61,
         "charset": "base64url"
-      }
-    }
-  ],
-  "kept": [
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
+    },
     {
       "name": "si",
       "shape": {
         "length": 16,
         "charset": "base64url"
-      }
+      },
+      "outcome": "kept",
+      "flagged": false
     }
   ],
   "note": "bell\u0007"

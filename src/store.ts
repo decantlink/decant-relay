@@ -4,13 +4,14 @@ export type StoreResult = "stored" | "duplicate" | "capped";
 
 /** Stores a validated report once per reportId unless today's count has reached `cap` or all raw reports `ceiling`. */
 export async function storeReport(db: D1Database, report: Report, day: string, cap: number, ceiling: number): Promise<StoreResult> {
-  const compact = (list: Report["removed"]) =>
-    JSON.stringify(list.map((p) => ({ name: p.name, length: p.shape.length, charset: p.shape.charset })));
+  const parameters = JSON.stringify(
+    report.parameters.map((p) => ({ name: p.name, length: p.shape.length, charset: p.shape.charset, outcome: p.outcome, flagged: p.flagged })),
+  );
 
   const [insert] = await db.batch([
     db
       .prepare(
-        `INSERT INTO reports (report_id, day, kind, host, app_major, note, removed, kept)
+        `INSERT INTO reports (report_id, day, kind, host, app_major, note, rules_generation, parameters)
          SELECT ?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8
          WHERE NOT EXISTS (SELECT 1 FROM reports WHERE report_id = ?1)
            AND COALESCE((SELECT n FROM daily_counter WHERE day = ?2), 0) < ?9
@@ -23,8 +24,8 @@ export async function storeReport(db: D1Database, report: Report, day: string, c
         report.host,
         report.appMajor,
         report.note ?? null,
-        compact(report.removed),
-        compact(report.kept),
+        report.rulesGeneration,
+        parameters,
         cap,
         ceiling,
       ),

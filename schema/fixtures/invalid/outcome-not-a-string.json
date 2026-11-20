@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "reportId": "3f2b8c1e-5a47-4d9e-8b06-1c7a2e9d4f30",
+  "kind": "tracker-kept",
+  "host": "www.youtube.com",
+  "appMajor": 1,
+  "date": "2026-11-17",
+  "rulesGeneration": 17,
+  "parameters": [
+    {
+      "name": "si",
+      "shape": {
+        "length": 16,
+        "charset": "base64url"
+      },
+      "outcome": 1,
+      "flagged": false
+    }
+  ]
+}

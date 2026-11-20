@@ -6,13 +6,13 @@ import worker from "../../src/index";
 const WED = new Date("2026-11-18T03:17:00Z");
 const MON = new Date("2026-11-23T03:17:00Z");
 const NOTE = "private words the sender typed";
-const param = (name: string) => JSON.stringify([{ name, length: 10, charset: "base64url" }]);
+const param = (name: string, flagged: boolean) => JSON.stringify([{ name, length: 10, charset: "base64url", outcome: "kept", flagged }]);
 
 let seq = 0;
-const seed = async (day: string, host: string, name: string, kind = "tracker-kept", note: string | null = NOTE) => {
+const seed = async (day: string, host: string, name: string, kind = "tracker-kept", note: string | null = NOTE, flagged = false) => {
   const reportId = `00000000-0000-4000-8000-${(++seq).toString(16).padStart(12, "0")}`;
-  await env.DB.prepare("INSERT INTO reports (report_id, day, kind, host, app_major, note, removed, kept) VALUES (?1,?2,?3,?4,1,?5,?6,'[]')")
-    .bind(reportId, day, kind, host, note, param(name))
+  await env.DB.prepare("INSERT INTO reports (report_id, day, kind, host, app_major, note, rules_generation, parameters) VALUES (?1,?2,?3,?4,1,?5,17,?6)")
+    .bind(reportId, day, kind, host, note, param(name, flagged))
     .run();
   await env.DB.prepare("INSERT INTO raw_total (id, n) VALUES (1, 1) ON CONFLICT (id) DO UPDATE SET n = n + 1").run();
   return reportId;
@@ -118,6 +118,21 @@ describe("sendDigest", () => {
     expect(await marker()).toBe("2026-11-17");
   });
 
+  it("lists a pair with flagged reports before a newer pair without, and shows no flag counts", async () => {
+    await seed("2026-11-16", "old.example", "fbclid", "tracker-kept", null, true);
+    await seed("2026-11-16", "old.example", "fbclid");
+    await seed("2026-11-16", "old.example", "fbclid");
+    await seed("2026-11-17", "new.example", "si");
+    await seed("2026-11-17", "new.example", "si");
+    await seed("2026-11-17", "new.example", "si");
+    const e = configured();
+    await sendDigest(e, WED, false);
+    const { text } = e.sent[0];
+    expect(text).toContain("flagged first, then newest");
+    expect(text.indexOf("old.example / fbclid: 3")).toBeGreaterThan(-1);
+    expect(text.indexOf("old.example / fbclid")).toBeLessThan(text.indexOf("new.example / si"));
+    expect(text).not.toMatch(/flagged \d|flagged:/);
+  });
   it("leaves out the current day and anything already covered", async () => {
     await seed("2026-11-18", "a.example", "si");
     const e = configured();

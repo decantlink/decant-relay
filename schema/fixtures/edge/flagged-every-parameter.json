@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "reportId": "3f2b8c1e-5a47-4d9e-8b06-1c7a2e9d4f26",
+  "kind": "tracker-kept",
+  "host": "www.youtube.com",
+  "appMajor": 1,
+  "date": "2026-11-17",
+  "rulesGeneration": 17,
+  "parameters": [
+    {
+      "name": "a",
+      "shape": {
+        "length": 1,
+        "charset": "alpha"
+      },
+      "outcome": "kept",
+      "flagged": true
+    },
+    {
+      "name": "b",
+      "shape": {
+        "length": 1,
+        "charset": "digits"
+      },
+      "outcome": "removed-by-you",
+      "flagged": true
+    },
+    {
+      "name": "c",
+      "shape": {
+        "length": 0,
+        "charset": "empty"
+      },
+      "outcome": "restored-by-you",
+      "flagged": true
+    }
+  ]
+}

@@ -5,6 +5,6 @@
   "host": "www.youtube.com",
   "appMajor": 1,
   "date": "2026-11-17",
-  "removed": [],
-  "kept": []
+  "rulesGeneration": 17,
+  "parameters": []
 }

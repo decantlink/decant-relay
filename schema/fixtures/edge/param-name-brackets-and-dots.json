@@ -5,14 +5,16 @@
   "host": "www.youtube.com",
   "appMajor": 1,
   "date": "2026-11-17",
-  "removed": [
+  "rulesGeneration": 17,
+  "parameters": [
     {
       "name": "items[0].id:x-y_z",
       "shape": {
         "length": 3,
         "charset": "hex"
-      }
+      },
+      "outcome": "removed-by-rules",
+      "flagged": false
     }
-  ],
-  "kept": []
+  ]
 }
